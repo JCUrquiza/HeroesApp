@@ -1,6 +1,6 @@
-//se importa esta libreria para poder inyectar dependencias sin constructor de clase
+// Se importa esta libreria para poder inyectar dependencias sin constructor de clase
 import { inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import {
   ActivatedRouteSnapshot,
   CanActivateFn,
@@ -13,38 +13,42 @@ import {
 import { AuthService } from '../services/auth.service';
 
 const checkAuthStatus = (): boolean | Observable<boolean> => {
-  //se inyectan el AuthService y el Router
+  // Se inyectan el AuthService y el Router
   const authService: AuthService = inject(AuthService);
   const router: Router = inject(Router);
 
   return authService.checkAuthentication().pipe(
     tap((isAuthenticated) => {
-      if (!isAuthenticated) {
-        router.navigate(['/auth/login']);
+      if (isAuthenticated) {
+        router.navigate(['./']);
       }
-    })
+    }),
+    map( isAuthenticated => !isAuthenticated )
   );
 };
 
-//No hay necesidad de crear una clase, simplemente definiendo una función flecha y exportándola podemos utilizar sus funcionalidades de guard en el app-routing
-export const canActivateGuard: CanActivateFn = (
-  //Hay que tener en cuenta el tipado CanActiveFn
+// No hay necesidad de crear una clase,
+// simplemente definiendo una función flecha y exportándola podemos utilizar sus funcionalidades de guard en el app-routing
+export const canActivateGuardHeroes: CanActivateFn = (
+  // Hay que tener en cuenta el tipado CanActiveFn
   route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {
   // console.log('CanActivate');
   // console.log({ route, state });
+
   return checkAuthStatus();
   // return true;
 };
 
-export const canMatchGuard: CanMatchFn = (
-  //Tipado CanMatchFN
+export const canMatchGuardHeroes: CanMatchFn = (
+  // Tipado CanMatchFN
   route: Route,
   segments: UrlSegment[]
 ) => {
   // console.log('CanMatch');
   // console.log({ route, segments });
+
   return checkAuthStatus();
   // return true;
 };
